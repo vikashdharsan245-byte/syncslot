@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Faculty Hub Board Panel Workspace</h2>
+    <form method="GET" action="{{ url_for('teacher') }}" id="assignmentForm">
+        <div class="form-group">
+            <label>Select Active Teaching Assignment Context Slot</label>
+            <select name="idx" onchange="document.getElementById('assignmentForm').submit()">
+                {% for assign in assignments %}
+                    <option value="{{ loop.index0 }}" {% if loop.index0 == active_idx %}selected{% endif %}>
+                        Course: {{ assign['subject'] }} — {{ assign['dept'] }} (Section {{ assign['section'] }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="border-top: 3px solid var(--nitt-orange);">
+    <h3>Bind Additional Course / Cross-Dept Assignment</h3>
+    <form method="POST" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end;">
+        <input type="hidden" name="action" value="add_assignment">
+        <div class="form-group" style="margin:0;"><label>Target Department</label><select name="dept">{% for d in depts %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select></div>
+        <div class="form-group" style="margin:0;"><label>Target Section</label><select name="section">{% for s in sections %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select></div>
+        <div class="form-group" style="margin:0;"><label>Subject Title Name</label><input type="text" name="subject" required placeholder="e.g., Physics Lab"></div>
+        <button type="submit" class="btn" style="background-color: var(--nitt-orange); height: 44px;">Bind Assignment</button>
+    </form>
+</div>
+
+{% if assignments %}
+<div class="card">
+    <h3>Isolated Timetable Layout Grid for: <span style="color: var(--nitt-orange);">{{ assignments[active_idx]['subject'] }}</span></h3>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead><tr><th>Day</th>{% for slot in slots %}<th>{{ slot }}</th>{% endfor %}</tr></thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td style="font-weight:bold; background: rgba(28, 18, 59, 0.8);">{{ day }}</td>
+                    {% for slot in slots %}
+                        <td {% if tt[day][slot] %} style="background-color: rgba(157, 78, 221, 0.25); font-weight:bold;" {% endif %}>{{ tt[day][slot] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="border-top: 3px solid var(--success-green);">
+    <h3>Pending On-Duty (OD) / Leave Request Queues</h3>
+    {% if pending_leaves %}
+        <table>
+            <thead><tr><th>Roll Number</th><th>Date Requested</th><th>Reason Details</th><th>Action Interface</th></tr></thead>
+            <tbody>
+                {% for r in pending_leaves %}
+                <tr>
+                    <td>{{ r['student_username'] }}</td><td>{{ r['date'] }}</td><td>"{{ r['reason'] }}"</td>
+                    <td>
+                        <form method="POST" style="margin:0;">
+                            <input type="hidden" name="action" value="approve_leave">
+                            <input type="hidden" name="req_id" value="{{ r['id'] }}">
+                            <input type="hidden" name="stu" value="{{ r['student_username'] }}">
+                            <input type="hidden" name="sub" value="{{ r['subject'] }}">
+                            <input type="hidden" name="dept" value="{{ r['dept'] }}">
+                            <input type="hidden" name="sect" value="{{ r['section'] }}">
+                            <input type="hidden" name="date" value="{{ r['date'] }}">
+                            <button type="submit" class="btn" style="background: var(--success-green); color:#120c26; padding: 6px 12px;">Approve OD</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: var(--text-muted); font-style: italic; font-size: 14px;">No pending leave or OD applications on record for this assignment context.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Digital Attendance Registry Tracking Sheet</h3>
+    {% if students %}
+    <form method="POST">
+        <input type="hidden" name="action" value="mark_attendance">
+        <input type="hidden" name="active_idx" value="{{ active_idx }}">
+        <div class="form-group" style="width:250px; margin-bottom:20px;"><label>Session Execution Date</label><input type="date" name="date" required value="2026-07-07"></div>
+        <table>
+            <thead><tr><th>Student Roll</th><th>Attended Classes</th><th>Total Lectures Held</th><th>Mark Status</th></tr></thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><strong>{{ student }}</strong></td>
+                    <td>{{ att_data[student]['present'] }}</td><td>{{ att_data[student]['total'] }}</td>
+                    <td>
+                        <label style="margin-right:15px; color:var(--success-green); font-weight:bold;"><input type="radio" name="status_{{ student }}" value="present" checked> P</label>
+                        <label style="color:var(--error-red); font-weight:bold;"><input type="radio" name="status_{{ student }}" value="absent"> A</label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn" style="margin-top:20px;">Log Attendance Records Securely</button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>CCM Timetable Publishing Dashboard Desk</h2>
+    <form method="GET" action="{{ url_for('ccm') }}" id="filterForm" style="display:flex; gap:15px; align-items:flex-end; margin-bottom:20px;">
+        <div class="form-group" style="margin:0;"><label>Select Target Department</label>
+            <select name="dept" onchange="document.getElementById('filterForm').submit()">
+                {% for d in depts %}<option value="{{ d }}" {% if d == s_dept %}selected{% endif %}>{{ d }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="margin:0;"><label>Select Target Section</label>
+            <select name="section" onchange="document.getElementById('filterForm').submit()">
+                {% for s in sections %}<option value="{{ s }}" {% if s == s_sect %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<!-- Upgrade: Drag-and-Drop Creation Token Palette Panel Window -->
+<div class="card" style="border-left: 5px solid var(--nitt-blue); background: rgba(138, 92, 246, 0.1);">
+    <h3>Magical Allocation Palette Drawer</h3>
+    <p style="color: var(--text-muted); font-size: 13px; margin-top:-5px;">Create quick course templates below, then drag them directly into the time slots grid targets below to auto-populate rows instantly.</p>
+    <div style="display: flex; gap: 12px; margin-bottom: 15px;">
+        <input type="text" id="palSub" placeholder="Course Title Name" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color:#fff; border-radius:6px;">
+        <input type="text" id="palProf" placeholder="Professor User ID" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); color:#fff; border-radius:6px;">
+        <button type="button" class="btn" onclick="generatePaletteToken()" style="padding: 8px 16px;">Forge Token</button>
+    </div>
+    <div id="paletteTokenContainer" style="display: flex; gap: 10px; flex-wrap: wrap; min-height: 45px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px dashed var(--border-color);">
+        <div class="draggable-token" draggable="true" ondragstart="handleTokenDragStart(event)" data-subject="Data Structures" data-prof="prof_cse_01" style="padding: 6px 12px; background: var(--nitt-blue); color: white; border-radius: 6px; cursor: grab; font-size: 12px; font-weight: bold;">Data Structures (prof_cse_01)</div>
+        <div class="draggable-token" draggable="true" ondragstart="handleTokenDragStart(event)" data-subject="Digital Electronics" data-prof="prof_ece_02" style="padding: 6px 12px; background: var(--nitt-blue); color: white; border-radius: 6px; cursor: grab; font-size: 12px; font-weight: bold;">Digital Electronics (prof_ece_02)</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Construct Schedule Matrix Plan Structure: {{ s_dept }} - Section {{ s_sect }}</h3>
+    <form method="POST" action="{{ url_for('ccm', dept=s_dept, section=s_sect) }}">
+        <div style="overflow-x: auto;">
+            <table class="grid-timetable">
+                <thead>
+                    <tr><th>Day / Hours Grid</th>{% for slot in slots %}<th>{{ slot }}</th>{% endfor %}</tr>
+                </thead>
+                <tbody>
+                    {% for day in days %}
+                    <tr>
+                        <td style="font-weight:bold; background: rgba(28, 18, 59, 0.8);">{{ day }}</td>
+                        {% for slot in slots %}
+                        <!-- Added HTML5 Drop target wrappers -->
+                        <td class="droppable-cell" ondragover="allowCellDrop(event)" ondragleave="handleCellLeave(event)" ondrop="handleCellDrop(event)" style="transition: all 0.2s;">
+                            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                                <input type="text" class="cell-sub" name="sub_{{ day }}_{{ slot }}" value="{{ current_tt[day][slot]['subject'] }}" placeholder="Course Name">
+                                <input type="text" class="cell-prof" name="prof_{{ day }}_{{ slot }}" value="{{ current_tt[day][slot]['prof_id'] }}" placeholder="Prof User ID" style="border-color: rgba(138,92,246,0.4); background: rgba(0,0,0,0.3);">
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn" style="margin-top:20px; background-color: var(--nitt-orange);">Commit & Publish Timetable Layout</button>
+    </form>
+</div>
+
+<script>
+    function generatePaletteToken() {
+        const s = document.getElementById('palSub').value.strip();
+        const p = document.getElementById('palProf').value.strip();
+        if(!s || !p) return alert("Fill out the title and profile ID fields first.");
+        const tok = document.createElement('div');
+        tok.className = 'draggable-token';
+        tok.draggable = true;
+        tok.style = "padding: 6px 12px; background: var(--nitt-blue); color: white; border-radius: 6px; cursor: grab; font-size: 12px; font-weight: bold;";
+        tok.innerText = `${s} (${p})`;
+        tok.setAttribute('data-subject', s);
+        tok.setAttribute('data-prof', p);
+        tok.addEventListener('dragstart', handleTokenDragStart);
+        document.getElementById('paletteTokenContainer').appendChild(tok);
+        document.getElementById('palSub').value = ''; document.getElementById('palProf').value = '';
+    }
+
+    function handleTokenDragStart(e) {
+        e.dataTransfer.setData("text/subject", e.target.getAttribute('data-subject'));
+        e.dataTransfer.setData("text/prof", e.target.getAttribute('data-prof'));
+    }
+    function allowCellDrop(e) {
+        e.preventDefault();
+        e.currentTarget.style.background = "rgba(0, 245, 212, 0.15)";
+        e.currentTarget.style.boxShadow = "inset 0 0 10px var(--success-green)";
+    }
+    function handleCellLeave(e) {
+        e.currentTarget.style.background = "none"; e.currentTarget.style.boxShadow = "none";
+    }
+    function handleCellDrop(e) {
+        e.preventDefault();
+        e.currentTarget.style.background = "none"; e.currentTarget.style.boxShadow = "none";
+        const sub = e.dataTransfer.getData("text/subject");
+        const prof = e.dataTransfer.getData("text/prof");
+        if(sub && prof) {
+            e.currentTarget.querySelector('.cell-sub').value = sub;
+            e.currentTarget.querySelector('.cell-prof').value = prof;
+            e.currentTarget.style.animation = "pulseGlow 0.5s ease";
+        }
+    }
+</script>
+{% endblock %}

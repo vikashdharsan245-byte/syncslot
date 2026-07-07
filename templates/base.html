@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncSlotNITT</title>
+    <style>
+        /* Mystic Fantasy Palette & Design System Tokens */
+        :root {
+            --bg-main: #070412;
+            --bg-card: rgba(18, 12, 38, 0.75);
+            --bg-input: rgba(33, 23, 67, 0.6);
+            --border-color: rgba(138, 92, 246, 0.3);
+            --text-main: #e0d7ff;
+            --text-muted: #a496d6;
+            --nitt-blue: #9d4edd;
+            --nitt-blue-glow: rgba(157, 78, 221, 0.5);
+            --nitt-orange: #ff9e00;
+            --nitt-orange-hover: #ff6000;
+            --success-green: #00f5d4;
+            --success-glow: rgba(0, 245, 212, 0.2);
+            --error-red: #ff0054;
+            --error-glow: rgba(255, 0, 84, 0.2);
+        }
+
+        body {
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+            background: linear-gradient(-45deg, #070412, #160a2c, #051429, #220526);
+            background-size: 400% 400%;
+            animation: nebulaFlow 18s ease infinite;
+            color: var(--text-main); margin: 0; padding: 0; min-height: 100vh;
+        }
+
+        @keyframes nebulaFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            background-color: rgba(13, 8, 30, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color); padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); position: sticky; top: 0; z-index: 100;
+        }
+        
+        .header-brand-container { display: flex; align-items: center; gap: 12px; }
+        .header-brand-container img { height: 42px; filter: drop-shadow(0 0 8px var(--nitt-blue-glow)); }
+        header h1 { margin: 0; font-size: 22px; color: #fff; text-shadow: 0 0 12px var(--nitt-blue-glow); }
+        
+        /* Arcane Live Notification Dropdown Styling Layout config */
+        .header-controls { display: flex; align-items: center; gap: 20px; }
+        .notif-bell-container { position: relative; cursor: pointer; }
+        .bell-badge {
+            position: absolute; top: -5px; right: -5px; background: var(--error-red);
+            color: white; font-size: 10px; font-weight: bold; border-radius: 50%;
+            padding: 2px 6px; box-shadow: 0 0 8px var(--error-red);
+        }
+        .notif-dropdown {
+            position: absolute; right: 0; top: 35px; width: 320px;
+            background: rgba(13, 8, 30, 0.95); border: 1px solid var(--border-color);
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none; flex-direction: column; overflow: hidden; backdrop-filter: blur(10px);
+        }
+        .notif-item {
+            padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px; color: var(--text-main); transition: background 0.2s;
+        }
+        .notif-item:hover { background: rgba(157, 78, 221, 0.15); }
+        .notif-header { padding: 10px 15px; background: rgba(157, 78, 221, 0.1); font-weight: bold; font-size: 12px; color: var(--nitt-orange); }
+
+        header a { 
+            color: #fff; text-decoration: none; font-weight: 600; padding: 8px 18px; border-radius: 6px; 
+            background-color: var(--nitt-orange); transition: all 0.3s;
+        }
+        header a:hover { background-color: var(--nitt-orange-hover); transform: translateY(-2px); box-shadow: 0 0 15px rgba(255, 158, 0, 0.5); }
+
+        .container { max-width: 1200px; margin: 35px auto; padding: 0 20px; }
+        .card { 
+            background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 30px; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); margin-bottom: 25px;
+            transition: all 0.4s;
+        }
+        .card:hover { border-color: rgba(157, 78, 221, 0.6); box-shadow: 0 12px 40px rgba(157, 78, 221, 0.25); }
+
+        .flash-messages { 
+            background-color: var(--success-glow); color: var(--success-green); padding: 14px 20px; 
+            border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--success-green); 
+            animation: pulseGlow 2.5s infinite alternate;
+        }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 8px rgba(0, 245, 212, 0.2); } 100% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.5); } }
+
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 8px; font-weight: 500; color: #d0c4ff; font-size: 14px; }
+        .form-group select, .form-group input { 
+            padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); 
+            border-radius: 8px; font-size: 14px; color: #fff; outline: none; transition: all 0.25s;
+        }
+        .form-group select:focus, .form-group input:focus { border-color: #b5179e; box-shadow: 0 0 12px rgba(181, 23, 158, 0.4); }
+
+        .btn { 
+            padding: 12px 24px; border: none; background-color: var(--nitt-blue); color: white; 
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(157, 78, 221, 0.6); filter: brightness(1.1); }
+
+        table { 
+            width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; 
+            background: rgba(15, 10, 32, 0.6); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);
+        }
+        th, td { border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 14px; text-align: center; font-size: 14px; }
+        th:last-child, td:last-child { border-right: none; }
+        tr:last-child td { border-bottom: none; }
+        th { background-color: rgba(28, 18, 59, 0.8); color: #fff; text-shadow: 0 0 6px var(--nitt-blue-glow); }
+        tr:hover td { background-color: rgba(157, 78, 221, 0.08); }
+
+        .grid-timetable input { 
+            width: 90%; padding: 8px; background-color: rgba(10, 6, 24, 0.7);
+            border: 1px solid var(--border-color); border-radius: 6px; text-align: center; color: #fff;
+        }
+        hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-brand-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="SyncSlotNITT Logo">
+            <h1>SyncSlotNITT</h1>
+        </div>
+        <div class="header-controls">
+            {% if session.get('user') %}
+                <!-- Arcane Bell Container Element Layout -->
+                <div class="notif-bell-container" onclick="toggleNotifDropdown(event)">
+                    <span style="font-size: 22px;">🔔</span>
+                    {% if global_notifications %}
+                        <span class="bell-badge">{{ global_notifications|length }}</span>
+                    {% endif %}
+                    <div class="notif-dropdown" id="notifMenu">
+                        <div class="notif-header">Live Magic Notification Feed</div>
+                        {% for n in global_notifications %}
+                            <div class="notif-item">{{ n['message'] }}</div>
+                        {% else %}
+                            <div class="notif-item" style="color: var(--text-muted); text-style: italic;">No unread telemetries.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <span style="margin-right: 15px; color: var(--text-muted);">Welcome, <strong style="color: #fff;">{{ session['user'] }}</strong></span>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function toggleNotifDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('notifMenu');
+            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+        }
+        document.addEventListener('click', () => {
+            const menu = document.getElementById('notifMenu');
+            if(menu) menu.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

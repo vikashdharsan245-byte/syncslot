@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--nitt-blue);">
+    <h2>Faculty Hub Secure Login Gateway</h2>
+    <form method="POST">
+        <div class="form-group"><label>Professor Username</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+        <button type="submit" class="btn">Verify Profile Credentials</button>
+    </form>
+    <p style="margin-top:15px; font-size:14px;">New Faculty Member? <a href="{{ url_for('register_teacher') }}">Register here</a></p>
+</div>
+{% endblock %}

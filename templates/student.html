@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="card" style="background: linear-gradient(135deg, rgba(88,166,255,0.2) 0%, rgba(157,78,221,0.2) 100%); display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h2>Student Academic Dashboard Terminal</h2>
+        <p>Designation Track Scope: <strong>{{ s_info['dept'] }} — Section {{ s_info['section'] }}</strong></p>
+    </div>
+    <!-- Upgrade: Integrated Export to Calendar Action Panel -->
+    <button type="button" class="btn" onclick="exportTimetableToICS()" style="background-color: var(--nitt-orange); height: fit-content;">📅 Export Schedule to Calendar (.ics)</button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+    {% for sub, metrics in attendance.items() %}
+    <div class="card" style="text-align: center; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+        <h4 style="margin: 0 0 10px 0; color:#fff;">{{ sub }}</h4>
+        <div style="width: 130px; height: 130px; position: relative; margin: 10px 0;">
+            <canvas id="chart_{{ loop.index }}"></canvas>
+            <div style="position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 16px; color: {% if metrics['percentage'] < 75 %}var(--error-red){% else %}var(--success-green){% endif %};">
+                {{ metrics['percentage'] }}%
+            </div>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 5px 0 0 0;">Logged: {{ metrics['present'] }} / {{ metrics['total'] }} Hours</p>
+        
+        <script>
+            new Chart(document.getElementById('chart_{{ loop.index }}'), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [{{ metrics['percentage'] }}, {{ 100 - metrics['percentage'] }}],
+                        backgroundColor: ['{% if metrics['percentage'] < 75 %}#ff0054{% else %}#00f5d4{% endif %}', '#21262d'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '80%', plugins: { tooltip: { enabled: false } }, responsive: true, maintainAspectRatio: true }
+            });
+        </script>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+    <div class="card">
+        <h3>File Official On-Duty (OD) / Leave Waiver Request</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Target Course Subject</label>
+                <select name="subject">{% for sub in attendance.keys() %}<option value="{{ sub }}">{{ sub }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-group"><label>Session Target Missed Date</label><input type="date" name="date" required value="2026-07-07"></div>
+            <div class="form-group"><label>Reasoning Declaration Context</label><input type="text" name="reason" placeholder="e.g., Festember Coordinating Duty" required></div>
+            <button type="submit" class="btn">Submit OD Request</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Your Leave Registry Logs Status</h3>
+        <div style="overflow-y: auto; max-height: 280px;">
+            <table>
+                <thead><tr><th>Subject</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for l in leaves %}
+                    <tr>
+                        <td>{{ l['subject'] }}</td><td>{{ l['date'] }}</td>
+                        <td style="font-weight: bold; color: {% if l['status']=='Approved' %}var(--success-green){% else %}var(--nitt-orange){% endif %};">{{ l['status'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Your Section Day-Time Class Schedule Timetable</h3>
+    <div style="overflow-x: auto;">
+        <table id="studentTimetableGrid">
+            <thead><tr><th>Day / Hour Slots</th>{% for slot in slots %}<th>{{ slot }}</th>{% endfor %}</tr></thead>
+            <tbody>
+                {% for day in days %}
+                <tr>
+                    <td class="day-label" style="font-weight:bold; background: rgba(28, 18, 59, 0.8);">{{ day }}</td>
+                    {% for slot in slots %}
+                    <td class="timetable-slot-cell" data-slot="{{ slot }}" {% if tt[day][slot] %} style="background-color: rgba(36,23,74,0.5); font-weight:600;" {% endif %}>{{ tt[day][slot] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // iCalendar standard structural payload data-transformer script execution loop
+    function exportTimetableToICS() {
+        let icsContent = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//SyncSlotNITT//Class Schedule Exporter//EN",
+            "CALSCALE:GREGORIAN",
+            "METHOD:PUBLISH"
+        ];
+
+        const dayMap = { "Monday": "MO", "Tuesday": "TU", "Wednesday": "WE", "Thursday": "TH", "Friday": "FR" };
+        const rows = document.querySelectorAll("#studentTimetableGrid tbody tr");
+        
+        rows.forEach(row => {
+            const dayName = row.querySelector(".day-label").innerText.trim();
+            const cells = row.querySelectorAll(".timetable-slot-cell");
+            
+            cells.forEach(cell => {
+                const text = cell.innerText.trim();
+                if(text && text !== "") {
+                    const slotTime = cell.getAttribute("data-slot");
+                    // Extract baseline hour blocks (e.g., '09:00 AM')
+                    const startRaw = slotTime.split(" - ")[0]; 
+                    let hour = parseInt(startRaw.split(":")[0]);
+                    const min = startRaw.split(":")[1].split(" ")[0];
+                    const ampm = startRaw.split(" ")[1];
+                    
+                    if (ampm === "PM" && hour !== 12) hour += 12;
+                    if (ampm === "AM" && hour === 12) hour = 0;
+                    
+                    let padHour = String(hour).padStart(2, '0');
+                    
+                    // Generate pseudo recurring scheduling rules
+                    icsContent.push("BEGIN:VEVENT");
+                    icsContent.push(`SUMMARY:${text}`);
+                    icsContent.push(`DESCRIPTION:SyncSlotNITT Section Scheduled Lecture Track`);
+                    icsContent.push(`DTSTART;TZID=Asia/Kolkata:20260706T${padHour}${min}00`);
+                    icsContent.push(`DURATION:PT1H`);
+                    icsContent.push(`RRULE:FREQ=WEEKLY;BYDAY=${dayMap[dayName]};UNTIL=20261231T235959Z`);
+                    icsContent.push("END:VEVENT");
+                }
+            });
+        });
+
+        icsContent.push("END:VCALENDAR");
+        
+        const blob = new Blob([icsContent.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "SyncSlot_NITT_Schedule.ics";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+{% endblock %}

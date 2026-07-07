@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid #28a745;">
+    <h2>Student Access Terminal Login</h2>
+    <form method="POST">
+        <div class="form-group"><label>Student Roll / Username</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+        <button type="submit" class="btn" style="background-color: #28a745;">Validate Access ID</button>
+    </form>
+    <p style="margin-top:15px; font-size:14px;">New Student? <a href="{{ url_for('register_student') }}">Register here</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--nitt-blue);">
+    <h2>Initialize Professional Faculty Account</h2>
+    <form method="POST">
+        <div class="form-group"><label>Unique Username (System Primary Key)</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Secure Password</label><input type="password" name="password" required></div>
+        <div class="form-group">
+            <label>Department Designation Domain</label>
+            <select name="dept">{% for d in depts %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+            <label>Allocated Section Group</label>
+            <select name="section">{% for s in sections %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Assigned Course Title Code</label><input type="text" name="subject" required placeholder="e.g., Operating Systems"></div>
+        <button type="submit" class="btn">Register Profile System Node</button>
+    </form>
+    <!-- Fixed tracking path here -->
+    <p style="margin-top:15px; font-size:14px;">Already registered? <a href="{{ url_for('login', role='teacher') }}">Login here</a></p>
+</div>
+{% endblock %}

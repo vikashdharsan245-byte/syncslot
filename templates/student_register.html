@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid #28a745;">
+    <h2>Initialize Student Portal Identity</h2>
+    <form method="POST">
+        <div class="form-group"><label>Unique Roll Number / Username (Primary Key)</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Secure Password</label><input type="password" name="password" required></div>
+        <div class="form-group">
+            <label>Enrolled Department Branch</label>
+            <select name="dept">{% for d in depts %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+            <label>Assigned Section Unit</label>
+            <select name="section">{% for s in sections %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+        </div>
+        <button type="submit" class="btn" style="background-color: #28a745;">Commit Profile Entry</button>
+    </form>
+    <!-- Fixed tracking path here -->
+    <p style="margin-top:15px; font-size:14px;">Already have an account? <a href="{{ url_for('login', role='student') }}">Login here</a></p>
+</div>
+{% endblock %}

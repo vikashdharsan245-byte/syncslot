@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--nitt-orange);">
+    <h2>Initialize Master CCM System Profile</h2>
+    <form method="POST">
+        <div class="form-group"><label>Unique Username (System Primary Key)</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Secure Password</label><input type="password" name="password" required></div>
+        <button type="submit" class="btn" style="background-color: var(--nitt-orange);">Commit System Account</button>
+    </form>
+    <!-- Fixed tracking path here -->
+    <p style="margin-top:15px; font-size:14px;">Already have an account? <a href="{{ url_for('login', role='ccm') }}">Login here</a></p>
+</div>
+{% endblock %}

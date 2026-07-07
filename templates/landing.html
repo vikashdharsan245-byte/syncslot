@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 40px;">
+    <h2>Welcome to SyncSlot</h2>
+    <p style="color: #666;">Select your designated department portal entrance below to authenticate your session.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+    <!-- CCM Gate -->
+    <div class="card" style="text-align: center; border-top: 5px solid var(--nitt-orange);">
+        <h3>CCM Timetable Portal</h3>
+        <p>For curriculum coordinators to manage and publish master class schedules.</p>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Fixed routing argument path here -->
+            <a href="{{ url_for('login', role='ccm') }}" class="btn" style="background-color: var(--nitt-orange);">Sign In</a>
+            <a href="{{ url_for('register_ccm') }}" style="color: var(--nitt-blue); text-decoration: none; font-size: 14px;">Create CCM Registry Profile</a>
+        </div>
+    </div>
+
+    <!-- Teacher Gate -->
+    <div class="card" style="text-align: center; border-top: 5px solid var(--nitt-blue);">
+        <h3>Faculty Track Portal</h3>
+        <p>For professors to view customized timetables and log attendance metrics.</p>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Fixed routing argument path here -->
+            <a href="{{ url_for('login', role='teacher') }}" class="btn">Sign In</a>
+            <a href="{{ url_for('register_teacher') }}" style="color: var(--nitt-blue); text-decoration: none; font-size: 14px;">Create Professor Profile</a>
+        </div>
+    </div>
+
+    <!-- Student Gate -->
+    <div class="card" style="text-align: center; border-top: 5px solid #28a745;">
+        <h3>Student Access Portal</h3>
+        <p>For students to track section timetables and view their attendance records.</p>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Fixed routing argument path here -->
+            <a href="{{ url_for('login', role='student') }}" class="btn" style="background-color: #28a745;">Sign In</a>
+            <a href="{{ url_for('register_student') }}" style="color: #28a745; text-decoration: none; font-size: 14px;">Create Student Account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

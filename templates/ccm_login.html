@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--nitt-orange);">
+    <h2>CCM Management Portal Secure Login</h2>
+    <form method="POST">
+        <div class="form-group"><label>CCM Username</label><input type="text" name="username" required></div>
+        <div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+        <button type="submit" class="btn">Authenticate Entry</button>
+    </form>
+    <p style="margin-top:15px; font-size:14px;">New coordinator? <a href="{{ url_for('register_ccm') }}">Register here</a></p>
+</div>
+{% endblock %}
